@@ -14,14 +14,15 @@ const randomForeignKeys = () => {
 };
 
 export async function POST() {
+  // create advocate dummy data
   for (const adv of advocateData) {
     await db.insert(advocates).values(adv).onConflictDoNothing();
   }
-
+  // create specialties dummy data
   for (const sp of specialtyData) {
     await db.insert(specialties).values(sp).onConflictDoNothing();
   }
-
+  // create associations between advocates & specialties
   for (let i = 0; i < 100; i++) {
     const ids = randomForeignKeys();
     if (ids[0] === 0 || ids[1] === 0) {

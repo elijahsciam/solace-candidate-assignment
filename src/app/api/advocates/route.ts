@@ -9,7 +9,7 @@ import { eq } from 'drizzle-orm';
 import { advocateData } from '../../../db/seed/advocates';
 
 export async function GET() {
-  // Uncomment this line to use a database
+  // get advocate data
   const data = await db
     .select({
       id: advocates.id,
@@ -32,19 +32,27 @@ export async function GET() {
       specialties,
       eq(advocateSpecialties.specialtiesId, specialties.id)
     );
-
-  const transformedData: Record<number, any> = {};
-
-  for (const sp of advSp) {
-    const current = transformedData[sp.advocateId];
-    if (current) {
-      current.specialties.push(sp.specialtyName);
-    } else {
-      transformedData[sp.advocateId] = data[sp.advocateId];
-      transformedData[sp.advocateId].specialties = [];
+  // create object map for quick access
+  const advocateMap: Record<
+    number,
+    {
+      id: number;
+      firstName: string;
+      lastName: string;
+      city: string;
+      degree: string;
+      yearsOfExperience: number;
+      phoneNumber: number;
+      specialties: string[];
     }
+  > = Object.fromEntries(data.map((a) => [a.id, { ...a, specialties: [] }]));
+
+  // assign associated speciality to advocate using map
+  for (const { advocateId, specialtyName } of advSp) {
+    advocateMap[advocateId]?.specialties.push(specialtyName);
   }
 
-  const d = Object.values(transformedData);
-  return Response.json({ data: d });
+  // send array to FE
+  const transformedData = Object.values(advocateMap);
+  return Response.json({ data: transformedData });
 }
