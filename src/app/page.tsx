@@ -1,91 +1,112 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from 'react';
+import { MaterialReactTable, useMaterialReactTable, type MRT_ColumnDef} from 'material-react-table'
+
+export type Advocate = {
+  firstName: string;
+  lastName: string;
+  city: string;
+  degree: string;
+  specialties: string[];
+  yearsOfExperience: string;
+  phoneNumber: string;
+};
+
 
 export default function Home() {
-  const [advocates, setAdvocates] = useState([]);
-  const [filteredAdvocates, setFilteredAdvocates] = useState([]);
+  const [advocates, setAdvocates] = useState<Advocate[]>([]);
+
 
   useEffect(() => {
-    console.log("fetching advocates...");
-    fetch("/api/advocates").then((response) => {
+    console.log('fetching advocates...');
+    fetch('/api/advocates').then((response) => {
       response.json().then((jsonResponse) => {
         setAdvocates(jsonResponse.data);
-        setFilteredAdvocates(jsonResponse.data);
       });
     });
   }, []);
 
-  const onChange = (e) => {
-    const searchTerm = e.target.value;
 
-    document.getElementById("search-term").innerHTML = searchTerm;
 
-    console.log("filtering advocates...");
-    const filteredAdvocates = advocates.filter((advocate) => {
-      return (
-        advocate.firstName.includes(searchTerm) ||
-        advocate.lastName.includes(searchTerm) ||
-        advocate.city.includes(searchTerm) ||
-        advocate.degree.includes(searchTerm) ||
-        advocate.specialties.includes(searchTerm) ||
-        advocate.yearsOfExperience.includes(searchTerm)
-      );
-    });
+  const columns = useMemo<MRT_ColumnDef<Advocate>[]>(
+    () => [
+      {
+        id: 'advocates',
+        header: "Solace Advocates",
+        columns: [
+          { accessorKey: 'firstName',
+            id: 'first_name',
+            header: 'First Name',
+            size: 250,
+            Cell: ({renderedCellValue, row}) => (
+              <span>{renderedCellValue}</span>
+            )
+          },
+          {
+            accessorKey: 'lastName',
+            header: 'Last Name',
+            size: 250,
+            Cell: ({renderedCellValue, row}) => (
+              <span>{renderedCellValue}</span>
+            )
+          },
+          {
+            accessorKey: 'city',
+            header: 'City',
+            size: 250,
+            Cell: ({renderedCellValue, row}) => (
+              <span>{renderedCellValue}</span>
+            )
+          },
+          {
+            accessorKey: 'degree',
+            header: 'Degree',
+            size: 250,
+            Cell: ({renderedCellValue, row}) => (
+              <span>{renderedCellValue}</span>
+            )
+          },
+          {
+            accessorFn: (row) => row.specialties.map((s) => <div key={s}>{s}</div>),
+            header: 'Specialties',
+            size: 250,
+            Cell: ({renderedCellValue, row}) => (
+              <span>{renderedCellValue}</span>
+            )
+          },
+          {
+            accessorKey: 'yearsOfExperience',
+            header: 'Years of Experience',
+            size: 250,
+            Cell: ({renderedCellValue, row}) => (
+              <span>{renderedCellValue}</span>
+            )
+          },
+           {
+            accessorKey: 'phoneNumber',
+            header: 'Phone Number',
+            size: 250,
+            Cell: ({renderedCellValue, row}) => (
+              <span>{renderedCellValue}</span>
+            )
+          },
+        ]
+      }
+    ], []
+  )
 
-    setFilteredAdvocates(filteredAdvocates);
-  };
-
-  const onClick = () => {
-    console.log(advocates);
-    setFilteredAdvocates(advocates);
-  };
+  const table = useMaterialReactTable({
+    columns,
+    data: advocates,
+    enableColumnFilterModes: true,
+    enableColumnOrdering: true,
+    enableStickyHeader: true,
+  })
 
   return (
-    <main style={{ margin: "24px" }}>
-      <h1>Solace Advocates</h1>
-      <br />
-      <br />
-      <div>
-        <p>Search</p>
-        <p>
-          Searching for: <span id="search-term"></span>
-        </p>
-        <input style={{ border: "1px solid black" }} onChange={onChange} />
-        <button onClick={onClick}>Reset Search</button>
-      </div>
-      <br />
-      <br />
-      <table>
-        <thead>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>City</th>
-          <th>Degree</th>
-          <th>Specialties</th>
-          <th>Years of Experience</th>
-          <th>Phone Number</th>
-        </thead>
-        <tbody>
-          {filteredAdvocates.map((advocate) => {
-            return (
-              <tr>
-                <td>{advocate.firstName}</td>
-                <td>{advocate.lastName}</td>
-                <td>{advocate.city}</td>
-                <td>{advocate.degree}</td>
-                <td>
-                  {advocate.specialties.map((s) => (
-                    <div>{s}</div>
-                  ))}
-                </td>
-                <td>{advocate.yearsOfExperience}</td>
-                <td>{advocate.phoneNumber}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <main style={{ margin: '24px' }}>
+      <MaterialReactTable table={table} />
     </main>
   );
 }
