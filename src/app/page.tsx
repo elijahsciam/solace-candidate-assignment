@@ -96,8 +96,6 @@ export default function Home() {
     ], []
   )
 
-  console.log("HEYYY", advocates)
-
   const table = useMaterialReactTable({
     columns,
     data: advocates,
