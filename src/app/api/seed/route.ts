@@ -1,9 +1,36 @@
-import db from "../../../db";
-import { advocates } from "../../../db/schema";
-import { advocateData } from "../../../db/seed/advocates";
+import db from '../../../db';
+import {
+  advocates,
+  specialties,
+  advocateSpecialties,
+} from '../../../db/schema';
+import { advocateData, specialtyData } from '../../../db/seed/advocates';
+
+const randomForeignKeys = () => {
+  const advId = Math.floor(Math.random() * 15);
+  const specId = Math.floor(Math.random() * 26);
+
+  return [advId, specId];
+};
 
 export async function POST() {
-  const records = await db.insert(advocates).values(advocateData).returning();
+  for (const adv of advocateData) {
+    await db.insert(advocates).values(adv).onConflictDoNothing();
+  }
 
-  return Response.json({ advocates: records });
+  for (const sp of specialtyData) {
+    await db.insert(specialties).values(sp).onConflictDoNothing();
+  }
+
+  for (let i = 0; i < 100; i++) {
+    const ids = randomForeignKeys();
+    if (ids[0] === 0 || ids[1] === 0) {
+      continue;
+    }
+    await db
+      .insert(advocateSpecialties)
+      .values({ advocateId: ids[0], specialtiesId: ids[1] });
+  }
+
+  return Response.json({ advocateData });
 }
